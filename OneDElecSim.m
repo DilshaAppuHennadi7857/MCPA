@@ -1,12 +1,19 @@
 clear all
 clearvars
 clearvars -GLOBAL
-% close all
+close all
+
+%% Questions to ask TA
+% Plots are created after position and velocities have been updated so they
+% don't show t = 0
+% Do velocity and position numbers look reasonable?
 
 % set(0,'DefaultFigureWindowStyle','docked')
 % set(0,'defaultaxesfontsize',20)
 % set(0,'defaultaxesfontname','Times New Roman')
 % set(0,'DefaultLineLineWidth', 2);
+
+%% Global Constants
 
 global C
 
@@ -20,73 +27,66 @@ C.mu_0 = 1.2566370614e-6;           % vacuum permeability
 C.c = 299792458;                    % speed of light
 C.g = 9.80665;                      % metres (32.1740 ft) per s²
 
-% initialize electron position and velocity
-% elecXPos = 0;
-% elecVel = 1;
-
-% initialize variables used to calculate the change in velocity and time
-% prevVel = 0;
-% currVel = 0;
-% prevTime = 0;
-
-% initialize variables used to calculate electron position
-% prevPos = 0;
+%% initialize variables used to calculate electron position
 NumPart = 5;
 currPos = zeros(NumPart,1);
-currVel = linspace(1,NumPart,NumPart).';
-accel = 1;
+currVel = zeros(1,NumPart).';
 
-dt = 1;
-Nt = 50;
+% Assume electric field of 0.01F
+F = 0.01*C.q_0; % force of E-field
+accel = F/C.m_0; % from Newton's law: a = F/m
 
-% simulate 1 second
-for n = 1:Nt %1:0:0.001:1
-        currTime = n*dt;
-        saveTime(n) = currTime;
+dt = 1; % time step
+Nt = 101; % number of time steps
+
+%% simulate 0.01 second
+for n = 1:Nt
     
-%     F = 0.003; %N of force
+    %% Update time
+    currTime = n*dt;
+    saveTime(n) = currTime;
     
-%     currVel = elecVel; % store velocity before time step
-    
-    randVal = rand(NumPart,1);
+    %% Velocity
+    randVal = rand(NumPart,1); % assign scatter probability
     currVel = currVel + accel*dt; % calculate new velocity
-    scatter = randVal<=0.5;
+    scatter = randVal<=0.05; % scatter if rand <= 0.05 (probability of scatter)
+    
+    % scattering rules
     currVel(scatter) = 0;
-    
+%     currVel(scatter) = currVel(scatter)*-0.25;
+%     currVel(scatter) = -currVel(scatter);
+%     currVel(scatter) = 2*currVel(scatter);
+
     saveVel(:,n) = currVel;
-% prevVel = currVel; % update previous velocity
     
-%     currPos = elecXPos; % store current position
+    % Drift velocity calc
+    velSum = sum(saveVel);
+    driftVel = velSum(n)/NumPart;
+    
+    %% Position
     currPos = currPos + currVel*dt; % calculate new position
     savePos(:,n) = currPos;
-%     prevPos = currPos; % update previous position
     
-    % Create plots for position and velocity
+    %% Create plots for position and velocity
     subplot(2,1,1)
     sLeg = {};
     for i=1:NumPart
         plot(saveTime,savePos(i,:),'-'); hold on
     end
     hold off
-%     plot(currPos,'o')
-    xlabel('time')
-    ylabel('X Position')
-    title('Electron Position over time')
-%     axis([0,20,-inf,inf])
+    xlabel('Time (ms)')
+    ylabel('X Position (m)')
+    title('Electron Position over time (for 0.1s)')
     
     subplot(2,1,2)
     for i = 1:NumPart
         plot(saveTime,saveVel(i,:), '-'); hold on
     end
     hold off
-    xlabel('time')
-    ylabel('Velocity')
-    title('Electron Velocity over time')
-%     axis([0,20,-inf,inf])
+    xlabel('Time (ms)')
+    ylabel('Velocity (m/s)')
+    title('Electron Velocity over time (for 0.1s), drift velocity (m/s): ', driftVel)
     
-    sgtitle('Drift Velocity: ')
-    
-%     hold on
     pause(0.01)
     
 end

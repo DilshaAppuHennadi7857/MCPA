@@ -1,9 +1,9 @@
 function [] = MCtraj(type,nTraj)
-    % clear all
+    clear all
     
-    %clearvars
-    %clearvars -GLOBAL
-    %close all
+    clearvars
+    clearvars -GLOBAL
+    close all
     
     % set(0,'DefaultFigureWindowStyle','docked')
     global C
