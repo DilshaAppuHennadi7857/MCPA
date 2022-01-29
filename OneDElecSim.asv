@@ -3,6 +3,11 @@ clearvars
 clearvars -GLOBAL
 close all
 
+%% Questions to ask TA
+% Plots are created after position and velocities have been updated so they
+% don't show t = 0
+% Do velocity and position numbers look reasonable?
+
 % set(0,'DefaultFigureWindowStyle','docked')
 % set(0,'defaultaxesfontsize',20)
 % set(0,'defaultaxesfontname','Times New Roman')
@@ -34,42 +39,13 @@ accel = F/C.m_0; % from Newton's law: a = F/m
 dt = 1; % time step
 Nt = 100; % number of time steps
 
-%% simulate 0.1 second
-for n = 0:Nt
-    
-    %% Update time
-    currTime = n*dt;
-    saveTime(n+1) = currTime;
-    
-    %% Velocity
-    if n > 0 % update velocity after time = 0
-        
-        randVal = rand(NumPart,1); % assign scatter probability
-        currVel = currVel + accel*(dt/1000); % calculate new velocity
-        scatter = randVal<=0.05; % scatter if rand <= 0.05 (probability of scatter)
+%% initialize plotting vectors
+saveTime(1) = 0;
+saveVel(1,NumPart) = 0;
+savePos(1,1) = 0;
 
-        % scattering rules
-        currVel(scatter) = 0;
-    %     currVel(scatter) = currVel(scatter)*-0.25;
-    %     currVel(scatter) = -currVel(scatter);
-    %     currVel(scatter) = 2*currVel(scatter);
-
-    end
-
-    saveVel(:,n+1) = currVel;
-    
-    % Drift velocity calc
-    velSum = sum(saveVel);
-    driftVel = velSum(n+1)/NumPart;
-    
-    %% Position
-    
-    if n > 0 % update position after time = 0
-        
-        currPos = currPos + currVel*(dt/1000); % calculate new position
-        
-    end
-    savePos(:,n+1) = currPos;
+%% simulate 0.01 second
+for n = 1:Nt
     
     %% Create plots for position and velocity
     subplot(2,1,1)
@@ -89,9 +65,34 @@ for n = 0:Nt
     hold off
     xlabel('Time (ms)')
     ylabel('Velocity (m/s)')
-    title('Electron Velocity, drift velocity (m/s): ', driftVel)
+    title('Electron Velocity), drift velocity (m/s): ', driftVel)
     
     sgtitle('Electron Movement Over 0.1s')
+    
+    %% Update time
+    currTime = n*dt;
+    saveTime(n+1) = currTime;
+    
+    %% Velocity
+    randVal = rand(NumPart,1); % assign scatter probability
+    currVel = currVel + accel*(dt/1000); % calculate new velocity
+    scatter = randVal<=0.05; % scatter if rand <= 0.05 (probability of scatter)
+    
+    % scattering rules
+    currVel(scatter) = 0;
+%     currVel(scatter) = currVel(scatter)*-0.25;
+%     currVel(scatter) = -currVel(scatter);
+%     currVel(scatter) = 2*currVel(scatter);
+
+    saveVel(:,n+1) = currVel;
+    
+    % Drift velocity calc
+    velSum = sum(saveVel);
+    driftVel = velSum(n)/NumPart;
+    
+    %% Position
+    currPos = currPos + currVel*(dt/1000); % calculate new position
+    savePos(:,n+1) = currPos;
     
     pause(0.01)
     
